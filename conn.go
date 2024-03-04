@@ -222,14 +222,12 @@ func (c *Conn) protocolError(code int, ec EnhancedCode, msg string) {
 
 // GREET state -> waiting for HELO
 func (c *Conn) handleGreet(enhanced bool, arg string) {
-	domain, err := parseHelloArgument(arg)
+	_, err := parseHelloArgument(arg)
 	if err != nil {
 		c.writeResponse(501, EnhancedCode{5, 5, 2}, "Domain/address argument required for HELO")
 		return
 	}
-	// c.helo is populated before NewSession so
-	// NewSession can access it via Conn.Hostname.
-	c.helo = domain
+	c.helo = c.server.Domain
 
 	sess, err := c.server.Backend.NewSession(c)
 	if err != nil {
@@ -246,7 +244,7 @@ func (c *Conn) handleGreet(enhanced bool, arg string) {
 	c.setSession(sess)
 
 	if !enhanced {
-		c.writeResponse(250, EnhancedCode{2, 0, 0}, fmt.Sprintf("Hello %s", domain))
+		c.writeResponse(250, EnhancedCode{2, 0, 0}, fmt.Sprintf("Hello %s", c.server.Domain))
 		return
 	}
 
@@ -288,7 +286,7 @@ func (c *Conn) handleGreet(enhanced bool, arg string) {
 		caps = append(caps, fmt.Sprintf("LIMITS RCPTMAX=%v", c.server.MaxRecipients))
 	}
 
-	args := []string{"Hello " + domain}
+	args := []string{"Hello " + c.server.Domain}
 	args = append(args, caps...)
 	c.writeResponse(250, NoEnhancedCode, args...)
 }

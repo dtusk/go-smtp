@@ -248,7 +248,7 @@ func testServerGreeted(t *testing.T, fn ...serverConfigureFunc) (be *backend, s 
 func testServerEhlo(t *testing.T, fn ...serverConfigureFunc) (be *backend, s *smtp.Server, c net.Conn, scanner *bufio.Scanner, caps map[string]bool) {
 	be, s, c, scanner = testServerGreeted(t, fn...)
 
-	io.WriteString(c, "EHLO localhost\r\n")
+	io.WriteString(c, "EHLO example.domain\r\n")
 
 	scanner.Scan()
 	if scanner.Text() != "250-Hello localhost" {
@@ -316,11 +316,13 @@ func TestServer_helo(t *testing.T) {
 	_, s, c, scanner := testServerGreeted(t)
 	defer s.Close()
 
-	io.WriteString(c, "HELO localhost\r\n")
+	io.WriteString(c, "HELO example.domain\r\n")
 
 	scanner.Scan()
 	if !strings.HasPrefix(scanner.Text(), "250 ") {
 		t.Fatal("Invalid HELO response:", scanner.Text())
+	} else if strings.Contains(scanner.Text(), "example.domain") {
+		t.Fatal("Should not echo domain", scanner.Text())
 	}
 }
 
