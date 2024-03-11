@@ -53,13 +53,13 @@ var defaultDialer = net.Dialer{Timeout: defaultTimeout}
 //
 // This function returns a plaintext connection. To enable TLS, use
 // DialStartTLS.
-func Dial(addr string) (*Client, error) {
+func Dial(addr string, serverName string) (*Client, error) {
 	conn, err := defaultDialer.Dial("tcp", addr)
 	if err != nil {
 		return nil, err
 	}
 	client := NewClient(conn)
-	client.serverName, _, _ = net.SplitHostPort(addr)
+	client.serverName = serverName
 	return client, nil
 }
 
@@ -67,7 +67,7 @@ func Dial(addr string) (*Client, error) {
 // The addr must include a port, as in "mail.example.com:smtps".
 //
 // A nil tlsConfig is equivalent to a zero tls.Config.
-func DialTLS(addr string, tlsConfig *tls.Config) (*Client, error) {
+func DialTLS(addr string, serverName string, tlsConfig *tls.Config) (*Client, error) {
 	tlsDialer := tls.Dialer{
 		NetDialer: &defaultDialer,
 		Config:    tlsConfig,
@@ -77,7 +77,7 @@ func DialTLS(addr string, tlsConfig *tls.Config) (*Client, error) {
 		return nil, err
 	}
 	client := NewClient(conn)
-	client.serverName, _, _ = net.SplitHostPort(addr)
+	client.serverName = serverName
 	return client, nil
 }
 
