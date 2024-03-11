@@ -612,7 +612,7 @@ func TestTLSConnState(t *testing.T) {
 		defer close(clientDone)
 		cfg := &tls.Config{ServerName: "example.com"}
 		testHookStartTLS(cfg) // set the RootCAs
-		c, err := DialStartTLS(ln.Addr().String(), cfg)
+		c, err := DialStartTLS(ln.Addr().String(), "localhost", cfg)
 		if err != nil {
 			t.Errorf("Client dial: %v", err)
 			return

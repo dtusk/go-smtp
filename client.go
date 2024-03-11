@@ -85,8 +85,8 @@ func DialTLS(addr string, serverName string, tlsConfig *tls.Config) (*Client, er
 // at addr. The addr must include a port, as in "mail.example.com:smtp".
 //
 // A nil tlsConfig is equivalent to a zero tls.Config.
-func DialStartTLS(addr string, tlsConfig *tls.Config) (*Client, error) {
-	c, err := Dial(addr)
+func DialStartTLS(addr string, serverName string, tlsConfig *tls.Config) (*Client, error) {
+	c, err := Dial(addr, serverName)
 	if err != nil {
 		return nil, err
 	}
@@ -655,9 +655,9 @@ func sendMail(addr string, implicitTLS bool, a sasl.Client, from string, to []st
 		err error
 	)
 	if implicitTLS {
-		c, err = DialTLS(addr, nil)
+		c, err = DialTLS(addr, "localhost", nil)
 	} else {
-		c, err = DialStartTLS(addr, nil)
+		c, err = DialStartTLS(addr, "localhost", nil)
 	}
 	if err != nil {
 		return err
