@@ -53,13 +53,13 @@ var defaultDialer = net.Dialer{Timeout: defaultTimeout}
 //
 // This function returns a plaintext connection. To enable TLS, use
 // DialStartTLS.
-func Dial(addr string, serverName string) (*Client, error) {
+func Dial(addr string) (*Client, error) {
 	conn, err := defaultDialer.Dial("tcp", addr)
 	if err != nil {
 		return nil, err
 	}
 	client := NewClient(conn)
-	client.serverName = serverName
+	client.serverName, _, _ = net.SplitHostPort(addr)
 	return client, nil
 }
 
@@ -67,7 +67,7 @@ func Dial(addr string, serverName string) (*Client, error) {
 // The addr must include a port, as in "mail.example.com:smtps".
 //
 // A nil tlsConfig is equivalent to a zero tls.Config.
-func DialTLS(addr string, serverName string, tlsConfig *tls.Config) (*Client, error) {
+func DialTLS(addr string, tlsConfig *tls.Config) (*Client, error) {
 	tlsDialer := tls.Dialer{
 		NetDialer: &defaultDialer,
 		Config:    tlsConfig,
@@ -77,7 +77,7 @@ func DialTLS(addr string, serverName string, tlsConfig *tls.Config) (*Client, er
 		return nil, err
 	}
 	client := NewClient(conn)
-	client.serverName = serverName
+	client.serverName, _, _ = net.SplitHostPort(addr)
 	return client, nil
 }
 
@@ -85,8 +85,8 @@ func DialTLS(addr string, serverName string, tlsConfig *tls.Config) (*Client, er
 // at addr. The addr must include a port, as in "mail.example.com:smtp".
 //
 // A nil tlsConfig is equivalent to a zero tls.Config.
-func DialStartTLS(addr string, serverName string, tlsConfig *tls.Config) (*Client, error) {
-	c, err := Dial(addr, serverName)
+func DialStartTLS(addr string, tlsConfig *tls.Config) (*Client, error) {
+	c, err := Dial(addr)
 	if err != nil {
 		return nil, err
 	}
@@ -655,9 +655,9 @@ func sendMail(addr string, implicitTLS bool, a sasl.Client, from string, to []st
 		err error
 	)
 	if implicitTLS {
-		c, err = DialTLS(addr, "localhost", nil)
+		c, err = DialTLS(addr, nil)
 	} else {
-		c, err = DialStartTLS(addr, "localhost", nil)
+		c, err = DialStartTLS(addr, nil)
 	}
 	if err != nil {
 		return err

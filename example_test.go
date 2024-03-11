@@ -15,7 +15,7 @@ import (
 
 func ExampleDial() {
 	// Connect to the remote SMTP server.
-	c, err := smtp.Dial("mail.example.com:25", "localhost")
+	c, err := smtp.Dial("mail.example.com:25")
 	if err != nil {
 		log.Fatal(err)
 	}
